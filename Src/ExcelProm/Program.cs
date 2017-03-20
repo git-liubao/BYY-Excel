@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ExcelProm
 {
@@ -15,15 +16,20 @@ namespace ExcelProm
         {
             var str = File.ReadAllText(System.AppDomain.CurrentDomain.BaseDirectory + "\\Setting.json");
             var setting = JsonConvert.DeserializeObject<Setting>(str);
-            foreach(var id in setting.FileIDs)
+            TaskFactory f = new TaskFactory();
+            int index = 1;
+
+            foreach (var id in setting.FileIDs)
             {
-                process(setting.FilePath, id, setting.Suffix);
+                Console.WriteLine();
+                Console.WriteLine($"**********************    index: {index++},  id: {id}");
+                Task.Run(() => process(setting.FilePath, id, setting.Suffix)).GetAwaiter().GetResult();
             }
         }
 
         private static void process (string filePath, string fileId, string suffix)
         {
-            string[] frontPage = Directory.GetFiles(filePath, $"*{fileId}封皮*.xls");
+            string[] frontPage = Directory.GetFiles(filePath, $"*{fileId}*封皮*.xls");
             if (frontPage.Length != 1)
             {
                 Console.WriteLine($"There are {frontPage.Length} front pages for {fileId}.");
@@ -34,7 +40,7 @@ namespace ExcelProm
             }
 
 
-            string[] page = Directory.GetFiles(filePath, $"*{fileId}_*.xlsx");
+            string[] page = Directory.GetFiles(filePath, $"UBS* {fileId}*.xls*");
             if (page.Length != 1)
             {
                 Console.WriteLine($"There are {page.Length} pages for {fileId}.");
@@ -44,7 +50,7 @@ namespace ExcelProm
                 return;
             }
 
-            var mergedPage = page[0].Split(".".ToCharArray())[0] + suffix + "." + page[0].Split(".".ToCharArray())[1];
+            var mergedPage = page[0].Split(".".ToCharArray())[0] + suffix + ".xlsx";
             var ps = new string[] { frontPage[0], page[0] };
 
             Console.WriteLine($"   front page  :   {frontPage[0]}.");
