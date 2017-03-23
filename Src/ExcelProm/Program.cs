@@ -85,9 +85,9 @@ namespace ExcelProm
             }
 
             // Close source documents before saving destination. Otherwise, save will fail
-            for (int wbIndex = 2; wbIndex <= app.Workbooks.Count; wbIndex++)
+            while (app.Workbooks.Count>1)
             {
-                Workbook wb = app.Workbooks[wbIndex];
+                Workbook wb = app.Workbooks[2];
                 wb.Close();
             }
 
